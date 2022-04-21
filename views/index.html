@@ -1,0 +1,101 @@
+@{layout('')}
+@{title(config.name)}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=11" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="robots" content="all,follow" />
+	<link href="//cdn.componentator.com/spa.min@18.css" rel="stylesheet" />
+	<script src="//cdn.componentator.com/spa.min@18.js"></script>
+	@{import('meta', 'head', 'default.js + ui.js', 'default.css + ui.css', 'favicon.ico')}
+</head>
+
+<body data---="exec" class="padding">
+
+	<div data---="LAZY directory"></div>
+	<div data---="LAZY menu"></div>
+	<div data---="LAZY approve"></div>
+	<div data---="LAZY datepicker"></div>
+	<div data---="LAZY colorpicker"></div>
+	<div data---="LAZY faicons"></div>
+
+	<div class="checkboxes"></div>
+
+</body>
+
+<script>
+
+	const checkboxes = document.querySelector('.checkboxes');
+	let shift_pressed = false;
+	let last_pressed = null;
+
+	const oninput_change = e => {
+		const target = e.target;
+		const value = target.checked;
+		const order = target.getAttribute('data-order').parseInt();
+		change_value(value, order, value);
+	};
+
+	// change other input values
+	const change_value = (value, order, ischecked) => {
+		// check if shift is pressed and have some last_pressed value
+		if (((value && ischecked) || (!value && !ischecked)) && shift_pressed && (last_pressed || last_pressed === 0)) {
+			// check if we are going higher or lower (e.g. first we click on input with order 1, now with order 3, value is true)
+			const increasing = order > last_pressed;
+			
+			// find all inputs
+			document.querySelectorAll('input').forEach(input => {
+				// order of input
+				const ord = input.getAttribute('data-order').parseInt();
+				
+				if (increasing) {
+					if (ord > last_pressed && ord <= order)
+						input.checked = ischecked;
+				} else {
+					// unchecking checkbox
+					if (!ischecked) {
+						if (ord <= last_pressed && ord >= order)
+							input.checked = ischecked;
+					// check checkbox
+					} else {
+						if (ord <= last_pressed && ord >= order)
+							input.checked = ischecked;
+					}
+				}
+			});
+		}
+		// set last pressed order
+		last_pressed = order;
+	};
+
+	for (let x = 0; x <= 10; x ++) {
+		const div = document.createElement('div');
+		const label = document.createElement('label');
+		const input = document.createElement('input');
+		label.setAttribute('for', `input${x}`);
+		label.innerHTML = `Option for input ${x}`;
+		label.className = 'mr10';
+		input.setAttribute('name', `input${x}`);
+		input.setAttribute('data-order', x);
+		input.setAttribute('type', 'checkbox');
+		input.addEventListener('change', oninput_change);
+		div.appendChild(label);
+		div.appendChild(input);
+		checkboxes.appendChild(div);
+	}
+
+	document.addEventListener('keydown', e => {
+		if (e.keyCode === 16) {
+			shift_pressed = true;
+		}
+	});
+
+	document.addEventListener('keyup', () => shift_pressed = false);
+
+</script>
+
+</html>
